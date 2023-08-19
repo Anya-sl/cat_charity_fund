@@ -42,18 +42,21 @@ async def execute_investment(
     if not active_objects:
         return obj_in
 
-    obj_in_shortage = obj_in.full_amount - obj_in.invested_amount
-    for obj in active_objects:
-        obj_shortage = obj.full_amount - obj.invested_amount
-        if obj_shortage >= obj_in_shortage:
-            obj.invested_amount += obj_in_shortage
-            obj_in.invested_amount += obj_in_shortage
+    obj_in_lack = obj_in.full_amount - obj_in.invested_amount
+    for active_obj in active_objects:
+        active_obj_lack = active_obj.full_amount - active_obj.invested_amount
+        to_invest = (obj_in_lack if active_obj_lack >= obj_in_lack
+                     else active_obj_lack)
+
+        active_obj.invested_amount += to_invest
+        obj_in.invested_amount += to_invest
+        obj_in_lack -= to_invest
+
+        if active_obj.full_amount == active_obj.invested_amount:
+            await close_fully_invested_object(active_obj)
+        if obj_in.full_amount == obj_in.invested_amount:
             await close_fully_invested_object(obj_in)
             break
-        else:
-            obj.invested_amount += obj_shortage
-            obj_in.invested_amount += obj_shortage
-            obj_in_shortage -= obj_shortage
-            await close_fully_invested_object(obj)
+
     await session.commit()
     return obj_in

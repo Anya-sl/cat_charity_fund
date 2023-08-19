@@ -10,13 +10,13 @@ from app.models import CharityProject
 
 
 async def check_full_amount_not_decrease(
-        full_amount: int,
+        invested_amount: int,
         new_full_amount: int,
 ) -> None:
-    if new_full_amount < full_amount:
+    if new_full_amount < invested_amount:
         raise HTTPException(
             status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
-            detail=f'Требуемая сумма не может быть меньше {full_amount}!',
+            detail=f'Требуемая сумма не может быть меньше {invested_amount}!',
         )
 
 

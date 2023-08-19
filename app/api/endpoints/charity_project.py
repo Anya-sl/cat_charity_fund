@@ -80,7 +80,6 @@ async def remove_charity_project(
 @router.patch(
     '/{project_id}',
     response_model=CharityProjectDB,
-    response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)],
 )
 async def partially_update_charity_project(
@@ -98,7 +97,7 @@ async def partially_update_charity_project(
         await check_name_duplicate(obj_in.name, session)
     if obj_in.full_amount is not None:
         await check_full_amount_not_decrease(
-            full_amount=charity_project.full_amount,
+            invested_amount=charity_project.invested_amount,
             new_full_amount=obj_in.full_amount)
     charity_project = await charity_project_crud.update(
         charity_project, obj_in, session
