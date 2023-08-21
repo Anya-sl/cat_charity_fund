@@ -44,9 +44,15 @@ class CRUDBase:
             obj_in_data['user_id'] = user.id
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
         return db_obj
+
+    async def commit_models(
+            self,
+            obj_list,
+            session: AsyncSession,
+    ):
+        session.add_all(obj_list)
+        await session.commit()
 
     async def update(
             self,
@@ -73,3 +79,43 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def get_active_objects(
+            self,
+            obj_in,
+            session: AsyncSession
+    ):
+        db_objs = await session.execute(
+            select(
+                obj_in
+            ).where(
+                obj_in.fully_invested == False  # noqa
+            ).order_by(
+                obj_in.create_date
+            )
+        )
+        return db_objs.scalars().all()
+
+    async def get_project_id_by_name(
+            self,
+            obj_in,
+            obj_name: str,
+            session: AsyncSession,
+    ) -> Optional[int]:
+        db_obj_id = await session.execute(
+            select(obj_in.id).where(
+                obj_in.name == obj_name
+            )
+        )
+        return db_obj_id.scalars().first()
+
+    async def get_by_user(
+        self,
+        obj_in,
+        user: User,
+        session: AsyncSession
+    ):
+        user_donations = await session.execute(
+            select(obj_in).where(obj_in.user_id == user.id)
+        )
+        return user_donations.scalars().all()

@@ -10,7 +10,7 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser, current_user
 from app.core.utils import execute_investment
 from app.crud import donation_crud
-from app.models import User
+from app.models import CharityProject, Donation, User
 from app.schemas.donation import DonationCreate, DonationDB
 
 
@@ -30,7 +30,7 @@ async def get_my_donations(
 ):
     """Получает список всех бронирований для текущего пользователя."""
     donations = await donation_crud.get_by_user(
-        session=session, user=user)
+        Donation, user, session)
     return donations
 
 
@@ -63,6 +63,8 @@ async def create_new_donation(
     """Сделать пожертвование."""
     new_donation = await donation_crud.create(
         donation, session, user)
-    await execute_investment(new_donation, session)
+    sources = await donation_crud.get_active_objects(CharityProject, session)
+    invested_list = await execute_investment(new_donation, sources)
+    await donation_crud.commit_models(invested_list, session)
     await session.refresh(new_donation)
     return new_donation

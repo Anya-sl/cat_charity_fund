@@ -3,7 +3,6 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (
@@ -17,6 +16,7 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.core.utils import execute_investment
 from app.crud.charity_project import charity_project_crud
+from app.models import Donation
 from app.schemas.charity_project import (
     CharityProjectCreate, CharityProjectDB, CharityProjectUpdate
 )
@@ -52,7 +52,9 @@ async def create_new_charity_project(
     await check_name_duplicate(charity_project.name, session)
     new_charity_project = await charity_project_crud.create(
         charity_project, session)
-    await execute_investment(new_charity_project, session)
+    sources = await charity_project_crud.get_active_objects(Donation, session)
+    invested_list = await execute_investment(new_charity_project, sources)
+    await charity_project_crud.commit_models(invested_list, session)
     await session.refresh(new_charity_project)
     return new_charity_project
 
