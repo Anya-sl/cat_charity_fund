@@ -8,9 +8,9 @@ from app.models import CharityProject, Donation
 
 
 async def execute_investment(
-    target: Union[CharityProject, Donation],
-    sources: List[Union[CharityProject, Donation]]
-    ) -> List[Union[CharityProject, Donation]]:
+        target: Union[CharityProject, Donation],
+        sources: List[Union[CharityProject, Donation]]
+) -> List[Union[CharityProject, Donation]]:
     invested_list = []
     if not target.invested_amount:
         target.invested_amount = 0
