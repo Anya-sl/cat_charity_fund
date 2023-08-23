@@ -14,7 +14,7 @@ class CharityProjectUpdate(BaseModel):
         min_length=MIN_NAME_LENGTH,
         max_length=MAX_NAME_LENGTH
     )
-    description: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = Field(None, min_length=MIN_NAME_LENGTH)
     full_amount: Optional[PositiveInt]
 
     class Config:
@@ -23,11 +23,10 @@ class CharityProjectUpdate(BaseModel):
 
 class CharityProjectCreate(CharityProjectUpdate):
     name: str = Field(
-        ...,
         min_length=MIN_NAME_LENGTH,
         max_length=MAX_NAME_LENGTH
     )
-    description: str = Field(..., min_length=1)
+    description: str = Field(min_length=MIN_NAME_LENGTH)
     full_amount: PositiveInt
 
 
